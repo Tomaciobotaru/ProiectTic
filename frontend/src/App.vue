@@ -1,9 +1,11 @@
+<script setup>
+import { RouterView } from 'vue-router'
+import BaseLayout from './components/BaseLayout.vue'
+</script>
+
 <template>
-  <Navbar />
-  <RouterView />
+  <BaseLayout>
+    <RouterView />
+  </BaseLayout>
 </template>
 
-<script setup>
-import Navbar from './components/Navbar.vue'
-import { RouterView } from 'vue-router'
-</script>
