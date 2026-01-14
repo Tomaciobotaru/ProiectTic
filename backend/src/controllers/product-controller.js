@@ -1,7 +1,26 @@
-import { db } from '../firebase.js'; // dacă vrei să folosești Firestore
+import { db } from '../firebase.js';
 import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 
 const colRef = collection(db, 'products');
+
+const normalizeProduct = (input) => {
+  const price = Number(input?.price);
+  const quantity = Number(input?.quantity);
+
+  return {
+    name: String(input?.name || '').trim(),
+    description: String(input?.description || '').trim(),
+    price: Number.isFinite(price) ? price : 0,
+    quantity: Number.isFinite(quantity) ? quantity : 0,
+    image: String(input?.image || '').trim()
+  };
+};
+
+const validateProduct = (product) => {
+  if (!product.name) return 'Numele produsului este obligatoriu.';
+  if (!product.description) return 'Descrierea produsului este obligatorie.';
+  return '';
+};
 
 export const getAllProducts = async (req, res) => {
   try {
@@ -15,7 +34,11 @@ export const getAllProducts = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   try {
-    const newProduct = req.body;
+    const newProduct = normalizeProduct(req.body);
+    const validationError = validateProduct(newProduct);
+    if (validationError) {
+      return res.status(400).json({ error: validationError });
+    }
     const docRef = await addDoc(colRef, newProduct);
     res.status(201).json({ id: docRef.id, ...newProduct });
   } catch (err) {
@@ -27,8 +50,13 @@ export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const docRef = doc(db, 'products', id);
-    await updateDoc(docRef, req.body);
-    res.json({ id, ...req.body });
+    const updatedProduct = normalizeProduct(req.body);
+    const validationError = validateProduct(updatedProduct);
+    if (validationError) {
+      return res.status(400).json({ error: validationError });
+    }
+    await updateDoc(docRef, updatedProduct);
+    res.json({ id, ...updatedProduct });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

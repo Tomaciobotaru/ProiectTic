@@ -2,10 +2,10 @@
   <div class="home-container">
     <section class="hero">
       <div>
-        <h2>Produse atent alese, prezentate impecabil.</h2>
+        <h2>Mini Tech Market</h2>
         <p>
-          Clientii pot explora liber catalogul, iar adminii pot gestiona rapid
-          totul dintr-un singur loc.
+          Magazinul nostru tech livreaza rapid accesorii, gadgeturi si echipamente
+          selectate pentru performanta si design.
         </p>
         <div class="hero-actions">
           <button class="ghost-button" @click="scrollToProducts">Vezi produse</button>
@@ -57,14 +57,16 @@
       <p>Seteaza `VITE_ADMIN_EMAILS` pentru a activa accesul de admin.</p>
     </section>
 
-    <section ref="productSection">
+    <section ref="productSection" class="products-section">
       <ProductList
-        :products="sortedProducts"
+        :products="visibleProducts"
         :loading="loading"
         :can-manage="canManage"
         @edit="onEdit"
         @delete="onDelete"
       />
+      <div ref="sentinel" class="sentinel"></div>
+      <p v-if="isLoadingMore" class="load-more">Se incarca mai multe produse...</p>
     </section>
 
     <div v-if="showForm" class="modal">
@@ -85,11 +87,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed, watch } from 'vue'
+import { ref, onMounted, computed, watch, onBeforeUnmount } from 'vue'
 import ProductForm from '../components/ProductForm.vue'
 import ProductList from '../components/ProductList.vue'
-import { db } from '../firebase'
-import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore'
 import { useAuthStore } from '@/stores/auth'
 
 const products = ref([])
@@ -99,6 +99,12 @@ const sortKey = ref('')
 const showForm = ref(false)
 const productSection = ref(null)
 const authStore = useAuthStore()
+const apiBase = import.meta.env.VITE_API_URL || '/api'
+const visibleCount = ref(12)
+const pageSize = ref(12)
+const sentinel = ref(null)
+const isLoadingMore = ref(false)
+let observer = null
 
 const canManage = computed(() => authStore.isAdmin)
 
@@ -106,9 +112,11 @@ const canManage = computed(() => authStore.isAdmin)
 const fetchProducts = async () => {
   loading.value = true
   try {
-    const colRef = collection(db, 'products')
-    const snapshot = await getDocs(colRef)
-    products.value = snapshot.docs.map(d => ({ id: d.id, ...d.data() }))
+    const response = await fetch(`${apiBase}/products`)
+    if (!response.ok) {
+      throw new Error('Request failed')
+    }
+    products.value = await response.json()
   } catch (err) {
     console.error(err)
   } finally {
@@ -131,6 +139,10 @@ const sortedProducts = computed(() => {
     default:
       return arr
   }
+})
+
+const visibleProducts = computed(() => {
+  return sortedProducts.value.slice(0, visibleCount.value)
 })
 
 const openCreate = () => {
@@ -161,9 +173,14 @@ const onEdit = (product) => {
 // Delete clicked
 const onDelete = async (id) => {
   if (!canManage.value) return
-  if (!confirm('Are you sure you want to delete this product?')) return
+  if (!confirm('Sigur vrei sa stergi acest produs?')) return
   try {
-    await deleteDoc(doc(db, 'products', id))
+    const response = await fetch(`${apiBase}/products/${id}`, {
+      method: 'DELETE'
+    })
+    if (!response.ok) {
+      throw new Error('Request failed')
+    }
     fetchProducts()
   } catch (err) {
     console.error('Error deleting product:', err)
@@ -192,6 +209,41 @@ watch(
   },
   { immediate: true }
 )
+
+const setupObserver = () => {
+  if (!sentinel.value) return
+  if (observer) observer.disconnect()
+
+  observer = new IntersectionObserver((entries) => {
+    const entry = entries[0]
+    if (!entry.isIntersecting) return
+    if (visibleCount.value >= sortedProducts.value.length) return
+
+    isLoadingMore.value = true
+    setTimeout(() => {
+      visibleCount.value += pageSize.value
+      isLoadingMore.value = false
+    }, 200)
+  })
+
+  observer.observe(sentinel.value)
+}
+
+watch(
+  () => [sortKey.value, products.value.length],
+  () => {
+    visibleCount.value = pageSize.value
+    setupObserver()
+  }
+)
+
+onMounted(() => {
+  setupObserver()
+})
+
+onBeforeUnmount(() => {
+  if (observer) observer.disconnect()
+})
 </script>
 
 <style scoped>
@@ -330,6 +382,22 @@ watch(
   background: #fff6ef;
   border: 1px dashed rgba(183, 90, 66, 0.4);
   color: var(--color-ink-muted);
+}
+
+.products-section {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sentinel {
+  height: 1px;
+}
+
+.load-more {
+  text-align: center;
+  color: var(--color-ink-muted);
+  font-size: 0.9rem;
 }
 
 .modal {

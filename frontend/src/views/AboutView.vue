@@ -6,7 +6,7 @@
       Oferim produse variate, de la laptopuri de gaming la accesorii și componente.
       Scopul nostru este să oferim clienților o experiență simplă, rapidă și sigură.
     </p>
-    <img src="@/assets/store.jpg" alt="Mini Shop" class="store-image" />
+    <img src="@/assets/tech.png" alt="Mini Shop" class="store-image" />
   </div>
 </template>
 

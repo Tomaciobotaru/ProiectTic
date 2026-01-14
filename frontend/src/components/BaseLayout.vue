@@ -6,7 +6,7 @@
           <img src="@/assets/logo.jpg" alt="Mini Shop Logo" class="logo" />
           <div>
             <h1>Mini Shop</h1>
-            <p class="tagline">Produse esentiale, alese cu grija.</p>
+            <p class="tagline">Tech compact. Performanta mare. Totul intr-un mini hub.</p>
           </div>
         </div>
 

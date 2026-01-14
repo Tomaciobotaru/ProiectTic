@@ -22,6 +22,7 @@
             <h3>{{ product.name }}</h3>
             <p>{{ product.description }}</p>
             <p class="price">{{ formatPrice(product.price) }}</p>
+            <p class="stock">{{ formatQuantity(product.quantity) }}</p>
           </div>
 
           <div v-if="canManage" class="actions">
@@ -48,6 +49,12 @@ const formatPrice = (value) => {
   const number = Number(value)
   if (Number.isNaN(number)) return 'Pret la cerere'
   return `$${number.toFixed(2)}`
+}
+
+const formatQuantity = (value) => {
+  const number = Number(value)
+  if (Number.isNaN(number)) return 'Stoc indisponibil'
+  return `Stoc: ${number} buc`
 }
 </script>
 
@@ -79,7 +86,7 @@ const formatPrice = (value) => {
 
 .products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(1, minmax(0, 1fr));
   gap: 1.5rem;
   width: 100%;
 }
@@ -130,6 +137,12 @@ const formatPrice = (value) => {
   margin-top: 0.4rem;
 }
 
+.product-card .stock {
+  font-size: 0.85rem;
+  color: var(--color-ink-muted);
+  margin-top: 0.2rem;
+}
+
 .actions {
   display: flex;
   gap: 0.5rem;
@@ -162,5 +175,23 @@ const formatPrice = (value) => {
 
 .delete-btn:hover {
   background: var(--color-clay-dark);
+}
+
+@media (min-width: 640px) {
+  .products-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 900px) {
+  .products-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1200px) {
+  .products-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 </style>

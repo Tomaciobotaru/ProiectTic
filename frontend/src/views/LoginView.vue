@@ -21,8 +21,6 @@
         <p v-if="error" class="error">{{ error }}</p>
       </form>
 
-      <p class="auth-hint">Demo admin: admin / admin</p>
-
       <p class="auth-footer">
         Nu ai cont?
         <RouterLink to="/register">Creeaza unul aici</RouterLink>
@@ -149,10 +147,4 @@ input {
   font-size: 0.9rem;
 }
 
-.auth-hint {
-  margin-top: 1rem;
-  font-size: 0.85rem;
-  color: var(--color-ink-muted);
-  text-align: center;
-}
 </style>

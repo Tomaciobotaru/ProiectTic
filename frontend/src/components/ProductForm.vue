@@ -17,6 +17,11 @@
       </label>
 
       <label>
+        Cantitate in stoc:
+        <input type="number" v-model.number="form.quantity" min="0" required />
+      </label>
+
+      <label>
         Imagine (URL):
         <input type="text" v-model="form.image" placeholder="Optional" />
       </label>
@@ -38,20 +43,20 @@
 
 <script setup>
 import { ref, watch, defineProps, defineEmits } from 'vue'
-import { db } from '../firebase'
-import { collection, addDoc, doc, updateDoc } from 'firebase/firestore'
 
 const props = defineProps({
   product: Object // produsul pentru edit
 })
 
 const emits = defineEmits(['saved', 'cancel'])
+const apiBase = import.meta.env.VITE_API_URL || '/api'
 
 const isEdit = ref(!!props.product)
 const form = ref({
   name: props.product?.name || '',
   description: props.product?.description || '',
   price: props.product?.price || 0,
+  quantity: props.product?.quantity ?? 0,
   image: props.product?.image || ''
 })
 
@@ -60,26 +65,40 @@ watch(
   (newVal) => {
     if (newVal) {
       isEdit.value = true
-      form.value = { ...newVal }
+      form.value = {
+        ...newVal,
+        quantity: newVal.quantity ?? 0
+      }
     } else {
       isEdit.value = false
-      form.value = { name: '', description: '', price: 0, image: '' }
+      form.value = { name: '', description: '', price: 0, quantity: 0, image: '' }
     }
   }
 )
 
 const handleSubmit = async () => {
   try {
-    const colRef = collection(db, 'products')
+    let response;
     if (isEdit.value && props.product.id) {
-      const docRef = doc(db, 'products', props.product.id)
-      await updateDoc(docRef, { ...form.value })
+      response = await fetch(`${apiBase}/products/${props.product.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form.value })
+      })
     } else {
-      await addDoc(colRef, { ...form.value })
+      response = await fetch(`${apiBase}/products`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...form.value })
+      })
+    }
+
+    if (!response.ok) {
+      throw new Error('Request failed')
     }
 
     emits('saved')
-    form.value = { name: '', description: '', price: 0, image: '' }
+    form.value = { name: '', description: '', price: 0, quantity: 0, image: '' }
   } catch (err) {
     console.error('Error saving product:', err)
   }
