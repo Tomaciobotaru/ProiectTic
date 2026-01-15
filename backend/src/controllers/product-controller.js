@@ -10,6 +10,7 @@ const normalizeProduct = (input) => {
   return {
     name: String(input?.name || '').trim(),
     description: String(input?.description || '').trim(),
+    category: String(input?.category || '').trim(),
     price: Number.isFinite(price) ? price : 0,
     quantity: Number.isFinite(quantity) ? quantity : 0,
     image: String(input?.image || '').trim()

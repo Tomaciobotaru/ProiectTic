@@ -47,6 +47,16 @@
           <option value="nameDesc">Nume Z→A</option>
         </select>
       </div>
+
+      <div class="sort-controls">
+        <label for="category">Categorie</label>
+        <select id="category" v-model="categoryFilter">
+          <option value="">Toate</option>
+          <option v-for="category in categories" :key="category" :value="category">
+            {{ category }}
+          </option>
+        </select>
+      </div>
     </section>
 
     <section v-if="!authStore.isAdmin && authStore.user" class="notice">
@@ -96,6 +106,7 @@ const products = ref([])
 const loading = ref(true)
 const selectedProduct = ref(null)
 const sortKey = ref('')
+const categoryFilter = ref('')
 const showForm = ref(false)
 const productSection = ref(null)
 const authStore = useAuthStore()
@@ -125,8 +136,27 @@ const fetchProducts = async () => {
 }
 
 // Computed: sorted products
+const normalizedCategory = (product) => {
+  if (!product) return ''
+  if (typeof product.category === 'string') return product.category
+  if (product.category?.name) return product.category.name
+  return ''
+}
+
+const categories = computed(() => {
+  const set = new Set()
+  products.value.forEach((product) => {
+    const name = normalizedCategory(product)
+    if (name) set.add(name)
+  })
+  return Array.from(set).sort((a, b) => a.localeCompare(b))
+})
+
 const sortedProducts = computed(() => {
   let arr = [...products.value]
+  if (categoryFilter.value) {
+    arr = arr.filter((product) => normalizedCategory(product) === categoryFilter.value)
+  }
   switch (sortKey.value) {
     case 'priceAsc':
       return arr.sort((a, b) => a.price - b.price)
@@ -230,7 +260,7 @@ const setupObserver = () => {
 }
 
 watch(
-  () => [sortKey.value, products.value.length],
+  () => [sortKey.value, categoryFilter.value, products.value.length],
   () => {
     visibleCount.value = pageSize.value
     setupObserver()

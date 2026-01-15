@@ -12,6 +12,16 @@
       </label>
 
       <label>
+        Categorie:
+        <input
+          type="text"
+          v-model="form.category"
+          placeholder="Laptopuri, Gadgeturi..."
+          required
+        />
+      </label>
+
+      <label>
         Pret:
         <input type="number" v-model.number="form.price" step="0.01" required />
       </label>
@@ -55,6 +65,7 @@ const isEdit = ref(!!props.product)
 const form = ref({
   name: props.product?.name || '',
   description: props.product?.description || '',
+  category: props.product?.category || '',
   price: props.product?.price || 0,
   quantity: props.product?.quantity ?? 0,
   image: props.product?.image || ''
@@ -67,11 +78,19 @@ watch(
       isEdit.value = true
       form.value = {
         ...newVal,
+        category: newVal.category || newVal.category?.name || '',
         quantity: newVal.quantity ?? 0
       }
     } else {
       isEdit.value = false
-      form.value = { name: '', description: '', price: 0, quantity: 0, image: '' }
+      form.value = {
+        name: '',
+        description: '',
+        category: '',
+        price: 0,
+        quantity: 0,
+        image: ''
+      }
     }
   }
 )
@@ -98,7 +117,14 @@ const handleSubmit = async () => {
     }
 
     emits('saved')
-    form.value = { name: '', description: '', price: 0, quantity: 0, image: '' }
+    form.value = {
+      name: '',
+      description: '',
+      category: '',
+      price: 0,
+      quantity: 0,
+      image: ''
+    }
   } catch (err) {
     console.error('Error saving product:', err)
   }

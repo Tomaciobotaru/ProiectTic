@@ -23,6 +23,9 @@
             <p>{{ product.description }}</p>
             <p class="price">{{ formatPrice(product.price) }}</p>
             <p class="stock">{{ formatQuantity(product.quantity) }}</p>
+            <p v-if="getCategory(product)" class="category">
+              {{ getCategory(product) }}
+            </p>
           </div>
 
           <div v-if="canManage" class="actions">
@@ -55,6 +58,13 @@ const formatQuantity = (value) => {
   const number = Number(value)
   if (Number.isNaN(number)) return 'Stoc indisponibil'
   return `Stoc: ${number} buc`
+}
+
+const getCategory = (product) => {
+  if (!product) return ''
+  if (typeof product.category === 'string') return product.category
+  if (product.category?.name) return product.category.name
+  return ''
 }
 </script>
 
@@ -141,6 +151,14 @@ const formatQuantity = (value) => {
   font-size: 0.85rem;
   color: var(--color-ink-muted);
   margin-top: 0.2rem;
+}
+
+.product-card .category {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--color-clay-dark);
+  margin-top: 0.3rem;
 }
 
 .actions {
