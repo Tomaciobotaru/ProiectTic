@@ -17,11 +17,6 @@ const normalizeProduct = (input) => {
   };
 };
 
-const validateProduct = (product) => {
-  if (!product.name) return 'Numele produsului este obligatoriu.';
-  if (!product.description) return 'Descrierea produsului este obligatorie.';
-  return '';
-};
 
 export const getAllProducts = async (req, res) => {
   try {
@@ -36,10 +31,6 @@ export const getAllProducts = async (req, res) => {
 export const createProduct = async (req, res) => {
   try {
     const newProduct = normalizeProduct(req.body);
-    const validationError = validateProduct(newProduct);
-    if (validationError) {
-      return res.status(400).json({ error: validationError });
-    }
     const docRef = await addDoc(colRef, newProduct);
     res.status(201).json({ id: docRef.id, ...newProduct });
   } catch (err) {
@@ -52,10 +43,6 @@ export const updateProduct = async (req, res) => {
     const { id } = req.params;
     const docRef = doc(db, 'products', id);
     const updatedProduct = normalizeProduct(req.body);
-    const validationError = validateProduct(updatedProduct);
-    if (validationError) {
-      return res.status(400).json({ error: validationError });
-    }
     await updateDoc(docRef, updatedProduct);
     res.json({ id, ...updatedProduct });
   } catch (err) {

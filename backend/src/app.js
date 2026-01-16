@@ -3,7 +3,7 @@ import cors from 'cors';
 import morgan from 'morgan';
 import routes from './routes/index.js';
 import { env } from './config/env.js';
-import { errorHandler } from './middleware/errorHandler.js';
+import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 const app = express();
 
@@ -14,6 +14,9 @@ app.use(morgan(env.nodeEnv === 'development' ? 'dev' : 'combined'));
 
 // Rute
 app.use('/api', routes);
+
+// 404 handler
+app.use(notFound);
 
 // Error handler
 app.use(errorHandler);
