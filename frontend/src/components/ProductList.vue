@@ -23,8 +23,8 @@
             <p>{{ product.description }}</p>
             <p class="price">{{ formatPrice(product.price) }}</p>
             <p class="stock">{{ formatQuantity(product.quantity) }}</p>
-            <p v-if="getCategory(product)" class="category">
-              {{ getCategory(product) }}
+            <p v-if="getCategoryLabel(product)" class="category">
+              {{ getCategoryLabel(product) }}
             </p>
           </div>
 
@@ -41,6 +41,7 @@
 <script setup>
 import { defineProps } from 'vue'
 import defaultImage from '@/assets/logo.jpg'
+import { getCategoryLabel } from '@/utils/product'
 
 const props = defineProps({
   products: Array,
@@ -60,12 +61,6 @@ const formatQuantity = (value) => {
   return `Stoc: ${number} buc`
 }
 
-const getCategory = (product) => {
-  if (!product) return ''
-  if (typeof product.category === 'string') return product.category
-  if (product.category?.name) return product.category.name
-  return ''
-}
 </script>
 
 <style scoped>

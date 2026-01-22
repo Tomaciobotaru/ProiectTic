@@ -9,11 +9,7 @@
         </p>
         <div class="hero-actions">
           <button class="ghost-button" @click="scrollToProducts">Vezi produse</button>
-          <button
-            v-if="canManage"
-            class="primary-button"
-            @click="openCreate"
-          >
+          <button v-if="canManage" class="primary-button" @click="openForm()">
             Adauga produs
           </button>
         </div>
@@ -101,6 +97,7 @@ import { ref, onMounted, computed, watch, onBeforeUnmount } from 'vue'
 import ProductForm from '../components/ProductForm.vue'
 import ProductList from '../components/ProductList.vue'
 import { useAuthStore } from '@/stores/auth'
+import { getCategoryLabel } from '@/utils/product'
 
 const products = ref([])
 const loading = ref(true)
@@ -136,17 +133,10 @@ const fetchProducts = async () => {
 }
 
 // Computed: sorted products
-const normalizedCategory = (product) => {
-  if (!product) return ''
-  if (typeof product.category === 'string') return product.category
-  if (product.category?.name) return product.category.name
-  return ''
-}
-
 const categories = computed(() => {
   const set = new Set()
   products.value.forEach((product) => {
-    const name = normalizedCategory(product)
+    const name = getCategoryLabel(product)
     if (name) set.add(name)
   })
   return Array.from(set).sort((a, b) => a.localeCompare(b))
@@ -155,7 +145,7 @@ const categories = computed(() => {
 const sortedProducts = computed(() => {
   let arr = [...products.value]
   if (categoryFilter.value) {
-    arr = arr.filter((product) => normalizedCategory(product) === categoryFilter.value)
+    arr = arr.filter((product) => getCategoryLabel(product) === categoryFilter.value)
   }
   switch (sortKey.value) {
     case 'priceAsc':
@@ -175,29 +165,26 @@ const visibleProducts = computed(() => {
   return sortedProducts.value.slice(0, visibleCount.value)
 })
 
-const openCreate = () => {
-  selectedProduct.value = null
+const openForm = (product = null) => {
+  selectedProduct.value = product ? { ...product } : null
   showForm.value = true
 }
 
 // Called after form save
 const onSaved = () => {
-  selectedProduct.value = null
-  showForm.value = false
+  closeForm()
   fetchProducts()
 }
 
 // Cancel edit
 const onCancel = () => {
-  selectedProduct.value = null
-  showForm.value = false
+  closeForm()
 }
 
 // Edit clicked
 const onEdit = (product) => {
   if (!canManage.value) return
-  selectedProduct.value = { ...product }
-  showForm.value = true
+  openForm(product)
 }
 
 // Delete clicked

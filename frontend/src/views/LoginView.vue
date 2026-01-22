@@ -7,7 +7,7 @@
       <form @submit.prevent="handleLogin">
         <label>
           Email
-          <input v-model="email" type="text" placeholder="email@exemplu.ro sau admin" />
+          <input v-model="email" type="email" placeholder="email@exemplu.ro" />
         </label>
 
         <label>
@@ -53,23 +53,11 @@ const password = ref('')
 const loading = ref(false)
 const error = ref('')
 
-const normalizeCredentials = () => {
-  const rawEmail = email.value.trim()
-  const rawPassword = password.value.trim()
-
-  if (rawEmail === 'admin' && rawPassword === 'admin') {
-    return { email: 'admin@minishop.local', password: 'admin123' }
-  }
-
-  return { email: rawEmail, password: rawPassword }
-}
-
 const handleLogin = async () => {
   try {
     error.value = ''
     loading.value = true
-    const credentials = normalizeCredentials()
-    await signInWithEmailAndPassword(auth, credentials.email, credentials.password)
+    await signInWithEmailAndPassword(auth, email.value.trim(), password.value)
     router.push('/')
   } catch (err) {
     error.value = 'Autentificare esuata. Verifica datele.'

@@ -53,6 +53,7 @@
 
 <script setup>
 import { ref, watch, defineProps, defineEmits } from 'vue'
+import { getCategoryLabel } from '@/utils/product'
 
 const props = defineProps({
   product: Object // produsul pentru edit
@@ -62,7 +63,18 @@ const emits = defineEmits(['saved', 'cancel'])
 const apiBase = import.meta.env.VITE_API_URL || '/api'
 
 const isEdit = ref(!!props.product)
+
+const getDefaultForm = () => ({
+  name: '',
+  description: '',
+  category: '',
+  price: 0,
+  quantity: 0,
+  image: ''
+})
+
 const form = ref({
+  ...getDefaultForm(),
   name: props.product?.name || '',
   description: props.product?.description || '',
   category: props.product?.category || '',
@@ -77,54 +89,38 @@ watch(
     if (newVal) {
       isEdit.value = true
       form.value = {
+        ...getDefaultForm(),
         ...newVal,
-        category: newVal.category || newVal.category?.name || '',
+        category: getCategoryLabel(newVal),
         quantity: newVal.quantity ?? 0
       }
     } else {
       isEdit.value = false
-      form.value = {
-        name: '',
-        description: '',
-        category: '',
-        price: 0,
-        quantity: 0,
-        image: ''
-      }
+      form.value = getDefaultForm()
     }
   }
 )
 
 const handleSubmit = async () => {
   try {
-    let response;
-    if (isEdit.value && props.product.id) {
-      response = await fetch(`${apiBase}/products/${props.product.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form.value })
-      })
-    } else {
-      response = await fetch(`${apiBase}/products`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...form.value })
-      })
-    }
+    const isUpdate = isEdit.value && props.product?.id
+    const url = isUpdate
+      ? `${apiBase}/products/${props.product.id}`
+      : `${apiBase}/products`
+    const method = isUpdate ? 'PUT' : 'POST'
+
+    const response = await fetch(url, {
+      method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ...form.value })
+    })
 
     if (!response.ok) {
       throw new Error('Request failed')
     }
 
     emits('saved')
-    form.value = {
-      name: '',
-      description: '',
-      category: '',
-      price: 0,
-      quantity: 0,
-      image: ''
-    }
+    form.value = getDefaultForm()
   } catch (err) {
     console.error('Error saving product:', err)
   }

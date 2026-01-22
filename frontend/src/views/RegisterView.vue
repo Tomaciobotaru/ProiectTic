@@ -12,7 +12,7 @@
 
         <label>
           Email
-          <input v-model="email" type="text" placeholder="email@exemplu.ro sau admin" />
+          <input v-model="email" type="email" placeholder="email@exemplu.ro" />
         </label>
 
         <label>
@@ -51,26 +51,14 @@ const password = ref('')
 const loading = ref(false)
 const error = ref('')
 
-const normalizeCredentials = () => {
-  const rawEmail = email.value.trim()
-  const rawPassword = password.value.trim()
-
-  if (rawEmail === 'admin' && rawPassword === 'admin') {
-    return { email: 'admin@minishop.local', password: 'admin123' }
-  }
-
-  return { email: rawEmail, password: rawPassword }
-}
-
 const handleRegister = async () => {
   try {
     error.value = ''
     loading.value = true
-    const credentialsInput = normalizeCredentials()
     const credentials = await createUserWithEmailAndPassword(
       auth,
-      credentialsInput.email,
-      credentialsInput.password
+      email.value.trim(),
+      password.value
     )
     if (name.value.trim()) {
       await updateProfile(credentials.user, {
