@@ -9,8 +9,10 @@ export const validateProduct = (req, res, next) => {
     return res.status(400).json({ error: 'Descrierea produsului este obligatorie.' });
   }
 
-  if (!category || typeof category !== 'string' || !category.trim()) {
-    return res.status(400).json({ error: 'Categoria produsului este obligatorie.' });
+  if (req.method === 'POST') {
+    if (!category || typeof category !== 'string' || !category.trim()) {
+      return res.status(400).json({ error: 'Categoria produsului este obligatorie.' });
+    }
   }
 
   if (price !== undefined && Number.isNaN(Number(price))) {

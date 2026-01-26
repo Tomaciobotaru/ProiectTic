@@ -77,7 +77,7 @@ const form = ref({
   ...getDefaultForm(),
   name: props.product?.name || '',
   description: props.product?.description || '',
-  category: props.product?.category || '',
+  category: getCategoryLabel(props.product) || '',
   price: props.product?.price || 0,
   quantity: props.product?.quantity ?? 0,
   image: props.product?.image || ''

@@ -1,5 +1,5 @@
 import { db } from '../firebase.js';
-import { collection, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
+import { collection, getDoc, getDocs, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { Product } from '../models/product-model.js';
 
 const colRef = collection(db, 'products');
@@ -8,10 +8,15 @@ const normalizeProduct = (input) => {
   const price = Number(input?.price);
   const quantity = Number(input?.quantity);
 
+  const categoryValue =
+    typeof input?.category === 'string'
+      ? input.category
+      : input?.category?.name || '';
+
   return new Product({
     name: String(input?.name || '').trim(),
     description: String(input?.description || '').trim(),
-    category: String(input?.category || '').trim(),
+    category: String(categoryValue || '').trim(),
     price: Number.isFinite(price) ? price : 0,
     quantity: Number.isFinite(quantity) ? quantity : 0,
     image: String(input?.image || '').trim()
@@ -47,7 +52,9 @@ export const updateProduct = async (req, res) => {
   try {
     const { id } = req.params;
     const docRef = doc(db, 'products', id);
-    const updatedProduct = normalizeProduct(req.body);
+    const snapshot = await getDoc(docRef);
+    const existingProduct = snapshot.exists() ? snapshot.data() : {};
+    const updatedProduct = normalizeProduct({ ...existingProduct, ...req.body });
     await updateDoc(docRef, updatedProduct.toPlain());
     res.json({ id, ...updatedProduct.toPlain() });
   } catch (err) {

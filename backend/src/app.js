@@ -7,18 +7,14 @@ import { errorHandler, notFound } from './middleware/errorHandler.js';
 
 const app = express();
 
-// Middleware globale
 app.use(cors());
 app.use(express.json());
 app.use(morgan(env.nodeEnv === 'development' ? 'dev' : 'combined'));
 
-// Rute
 app.use('/api', routes);
 
-// 404 handler
 app.use(notFound);
 
-// Error handler
 app.use(errorHandler);
 
 export default app;
