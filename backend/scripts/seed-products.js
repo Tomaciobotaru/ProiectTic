@@ -15,8 +15,7 @@ const buildProduct = () => {
     description: faker.commerce.productDescription(),
     category: faker.commerce.department(),
     quantity,
-    image: '',
-    features: Array.from({ length: 3 }, () => faker.commerce.productAdjective())
+    image: ''
   };
 };
 

@@ -7,7 +7,6 @@ const colRef = collection(db, 'products');
 const normalizeProduct = (input) => {
   const price = Number(input?.price);
   const quantity = Number(input?.quantity);
-  const features = Array.isArray(input?.features) ? input.features : [];
 
   return new Product({
     name: String(input?.name || '').trim(),
@@ -15,8 +14,7 @@ const normalizeProduct = (input) => {
     category: String(input?.category || '').trim(),
     price: Number.isFinite(price) ? price : 0,
     quantity: Number.isFinite(quantity) ? quantity : 0,
-    image: String(input?.image || '').trim(),
-    features
+    image: String(input?.image || '').trim()
   });
 };
 

@@ -1,5 +1,5 @@
 export class Product {
-  constructor({ id, name, price, description, category, quantity, image, features }) {
+  constructor({ id, name, price, description, category, quantity, image }) {
     if (id) this.id = id;
     this.name = name;
     this.price = price;
@@ -7,7 +7,6 @@ export class Product {
     this.category = category;
     this.quantity = quantity ?? 0;
     this.image = image || '';
-    this.features = Array.isArray(features) ? features : [];
   }
 
   toPlain() {
@@ -17,8 +16,7 @@ export class Product {
       description: this.description,
       category: this.category,
       quantity: this.quantity,
-      image: this.image,
-      features: this.features
+      image: this.image
     };
 
     if (this.id) {
